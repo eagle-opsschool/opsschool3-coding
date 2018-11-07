@@ -1,4 +1,19 @@
 #!/usr/bin/python
+"""
+Reads an input parameter with a JSON file name (for instance my_list.json). The JSON is be in the following format:
+
+- Dictionary that contains one nested hash and one list
+- The hash is of pairs of names and ages (name is the key and age is be the value)
+- The array is a list of ages
+
+The program go over the list of people and divide them to buckets based on their ages.
+Each bucket holds all the names of the people with age between the partition key and the following partition key.
+e.g., Bucket  ‘20-25’ holds a list of name that their age is between 20 and 25 (not including).
+This data then saved in a yaml format in a file with the same name as the input file with changed extension.
+
+In addition, if there is someone that doesn't fall into any of the baskets the program creates a new bucket based on the oldest person and add all the people that fall.
+into this bucket
+"""
 
 import os
 import sys
@@ -24,7 +39,7 @@ Writes output to file in expected format:
 
 For all ages and names.
 """
-def write_json_to_file(output_filename, output_json):
+def write_output_to_file(output_filename, output_json):
 	with open(output_filename + ".yml", 'w') as file:
 		for key in output_json.keys():
 			file.write(key + "\n")
@@ -44,25 +59,23 @@ def verify_zero_in_ages_list(ages_list):
 Given a list of ages, adds the largets to ages_list, if not already inside.
 """
 def add_oldest_age(ages_list, ppl_ages):
-	max_age = max(ages_list)
-	for age in ppl_ages.values():
-		if age > max_age:
-			max_age = age
-	ages_list.append(max_age)
+	max_age = max(ppl_ages.values())
+	if max_age > max(ages_list):
+		ages_list.append(max_age)
 
 
 """
 Creates a dictionary output_json. Keys are "<age>-<next age>" from ages_list, value is a list containing all names from ppl_ages list whose age fits.
 """
 def populate_dict(ages_list, ppl_ages):
-	output_json = {}
-	for i in range(len(ages_list) - 1):
-		output_json[str(ages_list[i]) + "-" + str(ages_list[i+1])] = []
-	for name, age in ppl_ages.items():
+	output_dict = {}
+	for i in range(len(ages_list) - 1): #Add ages range as keys
+		output_dict[str(ages_list[i]) + "-" + str(ages_list[i+1])] = []
+	for name, age in ppl_ages.items(): #Add names as values
 		for i in range(len(ages_list) - 1):
 			if age >= ages_list[i] and age <= ages_list[i+1]:
-				output_json[str(ages_list[i]) + "-" + str(ages_list[i+1])].append(name)
-	return output_json
+				output_dict[str(ages_list[i]) + "-" + str(ages_list[i+1])].append(name)
+	return output_dict
 
 
 """
@@ -72,29 +85,28 @@ def  remove_filename_suffix(filename):
 	return os.path.splitext(os.path.basename(filename))[0]
 
 
-"""
-Reads an input parameter with a JSON file name (for instance my_list.json). The JSON is be in the following format:
+def main(filename):
+	try:
+		input_json = read_json_from_file(filename)
+	except IOError as e:
+		print("Error occourred reading from file:")
+		print(e)
+		return 1
 
-- Dictionary that contains one nested hash and one list
-- The hash is of pairs of names and ages (name is the key and age is be the value)
-- The array is be a list of ages
-
-The program go over the list of people and divide them to buckets based on their ages. Each bucket holds all the names of the people with age between the partition key and the following partition key.
-e.g. Bucket ‘20-25’ holds a list of name that their age is between 20 and 25 (not including). This data is saved in a yaml format in a file with the same name as the input file with changed extension.
-If there is someone that doesn't fall into any of the baskets it creates a new bucket based on the oldest person and add all the people that fall into this bucket.
-"""
-def main(filename="a.txt"):
-	input_json = read_json_from_file(filename)
-	ages_list = input_json["buckets"]
-	ages_list = sorted(ages_list)
+	ages_list = sorted(input_json["buckets"])
 	ppl_ages = input_json["ppl_ages"]
 
 	verify_zero_in_ages_list(ages_list)
 	add_oldest_age(ages_list, ppl_ages)
 
-	output_json = populate_dict(ages_list, ppl_ages)
+	output_dict = populate_dict(ages_list, ppl_ages)
 	output_filename = remove_filename_suffix(filename)
-	write_json_to_file(output_filename, output_json)
+	try:
+		write_output_to_file(output_filename, output_dict)
+	except IOError as e:
+		print("Error occurred writing to file:")
+		print(e)
+		return 1
 
 
 if __name__ == "__main__":

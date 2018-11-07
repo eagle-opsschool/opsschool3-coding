@@ -57,10 +57,13 @@ def get_random_city_country(cities_list):
 
 
 """
-Checks computer's location according to IP. Then checks the current weather at found location and writes 
+Checks computer's location according to IP. Then checks the current weather at found location and writes
 the result to a file in a regular text format.
 If argument is False, it creates a list with at least 10 cities, And prints their current weather in the following format:
 “The weather in <city>, <country>(full country name) is XX degrees.
+
+Paramters: tenCities (boolean). If true, output weather report for ten random large cities across the globe. Otherwise, uses geoIP to
+find city in which the host IP is from, and output weather report for this city.
 """
 def main(tenCities=True):
 	weather = 0
@@ -68,9 +71,7 @@ def main(tenCities=True):
 	country = 0
 	cities_list = 0
 	filename = input("Please enter filename to write weather info into: ")
-	print(tenCities)
 	if tenCities:
-		print("")
 		try:
 				cities_list = generate_cities_list()
 		except requests.exceptions.RequestException as e:
@@ -81,10 +82,8 @@ def main(tenCities=True):
 		try:
 			while True: #openweathermap sometimes doesn't recognise cities from generate_cities_list(), so trying until he does recognise.
 				if tenCities:
-					print("2")
 					city, country = get_random_city_country(cities_list)
 				else:
-					print("1")
 					city, country = location_from_ip()
 				weather = get_weather_from_location(city, country)
 				if weather["cod"] != "404": #If openweathermap didn't recognised, try again.
