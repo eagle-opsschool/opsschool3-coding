@@ -1,0 +1,39 @@
+Provide a CLI using Click library that uses weather-api as in the examples below:
+---------------------------------------------------------------
+# running the following
+
+`python cli.py --city dublin --forecast TODAY -c`
+
+# Will print the following to screen:
+
+“The weather in Dublin today is Cloudy with temperatures trailing from 5-10 celsius.”
+
+----------------------
+# running the following
+
+`python cli.py --city dublin --forecast TODAY -f`
+
+# Will print the following to screen (same output but but with Fahrenheit):
+
+“The weather in Dublin today is Cloudy with temperatures trailing from 40-55 fahrenheit.”
+
+----------------------
+# running the following
+
+`python cli.py --city dublin --forecast TODAY+3 -c`
+
+# Will print the following to screen (the +3 meaning 3 days after today.
+# can be any number as long the weather-api allows it.
+# if not a descriptive error need to be shown on the screen):
+
+“
+The weather in Dublin today is Cloudy with temperatures trailing from 5-10 celsius.
+
+Forecast for the next 3 days:
+
+13/11/2018 Cloudy with temperatures trailing from 6-12 celsius.
+14/11/2018 Sunny with temperatures trailing from 9-13 celsius.
+15/11/2018 Sunny with temperatures trailing from 10-14 celsius.
+"
+
+NOTE: Date format is not important. print it as the api provides it.
