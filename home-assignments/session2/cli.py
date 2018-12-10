@@ -6,13 +6,13 @@ from weather import Weather, Unit
 
 
 def validate_input_forecast(forecast):
-	if re.match("^TODAY(\+\d+)?$", forecast) == None:
+	if not re.match("^TODAY(\+\d+)?$", forecast):
 		print("--forecast flag must get 'TODAY' or 'TODAY+<num>' where <num> is number of days for weather forecast.")
 		exit(1)
 
 
 def validate_input_city(city_weather_info, city):
-	if city_weather_info is None:
+	if not city_weather_info:
 		print("Cannot find a weather forecast for " + city + ".")
 		exit(1)
 
@@ -21,13 +21,6 @@ def get_number_of_days(forecast):
 	if forecast.upper() == "TODAY":
 		return 0
 	return int(forecast[len("TODAY+"):])
-
-
-def create_weather_obj(units):
-	if units == "CELSIUS":
-		return Weather(unit=Unit.CELSIUS)
-	else:
-		return Weather(unit=Unit.FAHRENHEIT)
 
 
 def print_weather_forecast(city, city_weather_info, extra_days, units):
@@ -46,7 +39,7 @@ def print_weather_forecast(city, city_weather_info, extra_days, units):
 @click.option('-f', 'units', flag_value='FAHRENHEIT', help="Show temperatures in Fahrenheit. Note: cannot also choose -c")
 @click.option('-c', 'units', flag_value='CELSIUS', default=True, help="Show temperatures in Celsius. Note: cannot also choose -f")
 def main(city, forecast, units):
-	weather = create_weather_obj(units)
+	weather = Weather(unit=getattr(Unit, units))
 	validate_input_forecast(forecast)
 
 	city_weather_info = weather.lookup_by_location(city)
